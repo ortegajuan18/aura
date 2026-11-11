@@ -24,7 +24,7 @@ label{display:block;font-size:13px;color:var(--mu);margin:14px 0 5px}label b{col
 .btn{background:var(--ac);color:#fff;border:0;border-radius:14px;padding:13px;font:inherit;font-weight:600;width:100%;margin-top:14px}.btn.g{background:#24242b;margin-top:8px}
 .seg{display:flex;background:var(--card);border-radius:16px;padding:4px;margin-bottom:12px}.seg button{flex:1;border:0;background:none;color:var(--mu);border-radius:12px;padding:9px;font:inherit}.seg .on{background:var(--ac);color:#fff}
 .bars{display:flex;align-items:flex-end;gap:2px;height:120px}.bars div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-height:2px}
-.ch{display:flex;flex-wrap:wrap;gap:8px}.ch button{background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:999px;padding:9px 13px;font:inherit;font-size:14px}.ch .on{background:var(--ac);border-color:var(--ac)}
+.ch{display:flex;flex-wrap:wrap;gap:8px}.ch button{background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:999px;padding:9px 13px;font:inherit;font-size:14px}.ch .on{background:var(--ac);border-color:var(--ac)}.ch.n button{width:40px;padding:9px 0}
 
 /* Barra de navegación flotante estilo píldora */
 nav {
@@ -92,11 +92,11 @@ sex:[["s","urg","Urgencia antes (0 ninguna – 10 máxima)",10],["o","como","¿C
 const CL=[["o","cig","Cigarrillos PROPIOS hoy *",N(10,["Más de 10"])],["o","pct","Porros CON tabaco hoy (los que fumé yo) *",N(4,["5 o más"])],["o","pst","Porros SIN tabaco hoy (los que fumé yo) *",N(4,["5 o más"])],["o","mast","Sesiones de masturbación hoy *",N(2,["3 o más"])],["o","uf","Urgencias de fumar que NO seguí *",N(4,["5 o más"])],["o","us","Urgencias sexuales que NO seguí *",N(4,["5 o más"])]];
 const CM=[["s","animo","Ánimo del día (0 muy bajo – 10 muy bueno)",10],["s","estres","Estrés del día (0 nada – 10 máximo)",10],["s","soledad","Soledad del día (0 nada – 10 máxima)",10],["n","sueno","Horas dormidas anoche"],["o","latencia","Tardé en dormirme",["Menos de 15 min","15-30 min","30-60 min","Más de 60 min"]],["o","alcohol","Alcohol hoy",["No","Poco","Bastante"]],["o","cafeina","Cafeína hoy",["No","1-2","3 o más"]],["o","noreg","¿Hoy hice algo y no lo registré?",["No","Sí","No estoy seguro"]]];
 function fld(f,p){const[ty,k,l,x]=f,id=p+k;
-if(ty=="s")return`<label>${l}: <b>–</b></label><input type=range min=0 max=${x} value=0 id=${id}>`;
+if(ty=="s")return`<label>${l}</label><div class="ch n" id=${id} data-t=o>${Array.from({length:x+1},(_,i)=>`<button type=button data-a=ch>${i}</button>`).join("")}</div>`;
 if(ty=="o"||ty=="m")return`<label>${l}</label><div class=ch id=${id} data-t=${ty}>${x.map(o=>`<button type=button data-a=ch>${esc(o)}</button>`).join("")}</div>`;
 return`<label>${l}</label><input id=${id} ${ty=="n"?'type=number inputmode=decimal min=0 step=any':""}>`}
 function col(fs,p){const o={};fs.forEach(([ty,k])=>{const e=$("#"+p+k);if(!e)return;
-if(ty=="s"){if(e.dataset.t)o[k]=+e.value}
+if(ty=="s"){const b=e.querySelector(".on");if(b)o[k]=+b.textContent}
 else if(ty=="o"||ty=="m"){const v=[...e.querySelectorAll(".on")].map(b=>b.textContent);if(v.length)o[k]=v.join(", ")}
 else if(e.value.trim()!=="")o[k]=ty=="n"?+e.value:e.value.trim()});return o}
 const chipVal=id=>{const b=$("#"+id+" .on");return b?b.textContent:""};
@@ -168,7 +168,6 @@ else if(a=="xk")return dl("cierres.csv",csv(Object.entries(db.closes).map(([f,o]
 else if(a=="xl")return dl("registros.csv",csv(db.logs),"text/csv");
 render()}
 document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t)return;if(t.dataset.a=="ch")return chip(t);act(t.dataset.a,t.dataset.v)});
-document.addEventListener("input",e=>{const t=e.target;if(t.type=="range"){t.dataset.t=1;t.previousElementSibling.querySelector("b").textContent=t.value}});
 render();
 
 /* Service Worker (ruta relativa: funciona en /aura/) */
