@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es"><head>
+<link rel="manifest" href="./manifest.json"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c"><title>Aura</title>
+<style>
+:root{--bg:#0a0a0c;--card:#16161a;--ac:#7c3aed;--mu:#9ca3af;--ln:#26262c;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:#fff;font:15px system-ui,Roboto,sans-serif}
+main{padding:12px 16px 100px;max-width:560px;margin:auto}
+.card{background:var(--card);border-radius:22px;padding:14px 16px;margin-bottom:12px}
+h1{font-size:21px;margin:0;text-transform:capitalize}h2{font-size:12px;color:var(--mu);letter-spacing:.07em;text-transform:uppercase;margin:0 0 8px}
+summary{font-weight:600;padding:4px 0;cursor:pointer}small{color:var(--mu)}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.top button,.x{background:var(--card);border:0;color:#fff;border-radius:14px;width:42px;height:42px;font-size:20px}.x{width:30px;height:30px;font-size:14px}
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px}
+.d{flex:none;width:44px;padding:8px 0 6px;border-radius:15px;background:var(--card);text-align:center;font-size:11px;color:var(--mu)}
+.d b{display:block;font-size:16px;color:#fff}.d i{display:block;width:5px;height:5px;margin:4px auto 0;border-radius:9px;background:#a78bfa}.d.on{background:var(--ac)}.d.on i{background:#fff}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--ln)}
+.ck{width:26px;height:26px;border-radius:9px;border:2px solid #3a3a44;flex:none}.ck.on{background:var(--ac);border-color:var(--ac)}
+input,select,textarea{width:100%;background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:12px;padding:11px;font:inherit}
+input[type=range]{accent-color:var(--ac);padding:0;border:0;background:none}
+label{display:block;font-size:13px;color:var(--mu);margin:14px 0 5px}label b{color:#fff}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:14px;padding:13px;font:inherit;font-weight:600;width:100%;margin-top:14px}.btn.g{background:#24242b;margin-top:8px}
+.seg{display:flex;background:var(--card);border-radius:16px;padding:4px;margin-bottom:12px}.seg button{flex:1;border:0;background:none;color:var(--mu);border-radius:12px;padding:9px;font:inherit}.seg .on{background:var(--ac);color:#fff}
+.bars{display:flex;align-items:flex-end;gap:2px;height:120px}.bars div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-height:2px}
+.ch{display:flex;flex-wrap:wrap;gap:8px}.ch button{background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:999px;padding:9px 13px;font:inherit;font-size:14px}.ch .on{background:var(--ac);border-color:var(--ac)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#101013;border-top:1px solid var(--ln);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;background:none;border:0;color:var(--mu);font:inherit;font-size:12px;padding:4px}nav button::before{content:"";display:block;width:6px;height:6px;border-radius:9px;margin:0 auto 5px}
+nav .on{color:#fff}nav .on::before{background:var(--ac)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#fff;color:#000;border-radius:14px;padding:10px 16px;opacity:0;transition:.3s;pointer-events:none}
+</style>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker registrado con éxito:', reg.scope))
+        .catch((err) => console.log('Error al registrar el Service Worker:', err));
+    });
+  }
+</script></head><body><main id="m"></main>
+<nav id="nv"><button data-a="tab" data-v="0">Registro</button><button data-a="tab" data-v="1">Hábitos</button><button data-a="tab" data-v="2">Progreso</button></nav>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),pad=n=>String(n).padStart(2,"0"),ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const MS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+let db;try{db=JSON.parse(localStorage.getItem("aura"))}catch(e){}
+db=db||{habits:[{id:"h1",n:"Agua",b:"Mañana"},{id:"h2",n:"Ejercicio",b:"Mañana"},{id:"h3",n:"Estudiar",b:"Tarde"},{id:"h4",n:"Leer",b:"Noche"}],goals:{},days:{},logs:[],closes:{},notes:[]};
+const save=()=>{try{localStorage.setItem("aura",JSON.stringify(db))}catch(e){toast("No se pudo guardar")}};
+try{navigator.storage.persist()}catch(e){}
+let tab=0,sub=0,edit=false,today=ymd(new Date()),sel=today;
+function toast(t){const e=$("#toast");e.textContent=t;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,1900)}
+const nowL=()=>{const d=new Date();return ymd(d)+"T"+d.toTimeString().slice(0,5)};
+const EST=["Ansiedad / tensión","Estrés","Tristeza / vacío","Soledad","Aburrimiento","Cansancio","Alegría / celebración","Deseo sexual","Frustración / ira","Neutro","No sé identificarlo"];
+const N=(m,x)=>{const a=[];for(let i=0;i<=m;i++)a.push(""+i);return a.concat(x||[])};
+const TY=["Cigarrillo","Porro con tabaco","Porro sin tabaco","Masturbación","Cierre nocturno"];
+const CU=["Ahora (últimos 15 min)","Hace 15-60 min","Hace 1-3 h","Hace más de 3 h (aprox.)","Ayer o antes"];
+const F={
+smoke:[["o","cant","¿Cuántos PROPIOS en este momento? (sin la cajetilla compartida)",["1","2","3","4","5","6 o más"]],["m","con","¿Con quién?",["Solo","Amigos","Pareja / persona que me gusta","Familia","Compañeros de clase/trabajo"]],["o","donde","¿Dónde?",["Habitación / cama","Casa (otras áreas)","Calle","Bar / fiesta / casa de amigos","Universidad / trabajo","Transporte"]],["o","llego","¿Cómo llegó?",["Yo lo pedí / compré","Me lo ofrecieron","Estaba en la ronda (se repartió)","Otra"]],["s","urg","Urgencia antes (0 ninguna – 10 máxima)",10],["o","como","¿Cómo fue?",["Lo decidí / planeado","Impulso","Automático (sin darme cuenta)"]],["o","resistio","¿Intenté resistir o posponer antes?",["Sí","No","No aplica"]],["m","estado","Estado antes",EST]],
+sex:[["s","urg","Urgencia antes (0 ninguna – 10 máxima)",10],["o","como","¿Cómo fue?",["Agendada / decidida","Impulso","Automático (sin darme cuenta)"]],["m","estim","Estímulo",["Fantasía","Recuerdo","Persona concreta","Pornografía","Redes sociales","Ninguno / automático"]],["m","estado","Estado antes",EST],["o","donde","¿Dónde?",["Cama","Baño","Otro lugar"]],["n","min","Duración aproximada (minutos)"],["s","reg","¿Pude regular mi excitación? (0 nada – 10 totalmente)",10],["s","pres","¿Estuve presente, no en piloto automático? (0–10)",10],["s","irr","Irritación o dolor en la zona (0 ninguna – 3 marcada)",3],["m","quedo","Cómo quedé",["Aliviado","Tranquilo","Con sueño","Neutro","Vacío","Culpa / vergüenza","Ansioso","Satisfecho"]]]};
+const CL=[["o","cig","Cigarrillos PROPIOS hoy *",N(10,["Más de 10"])],["o","pct","Porros CON tabaco hoy (los que fumé yo) *",N(4,["5 o más"])],["o","pst","Porros SIN tabaco hoy (los que fumé yo) *",N(4,["5 o más"])],["o","mast","Sesiones de masturbación hoy *",N(2,["3 o más"])],["o","uf","Urgencias de fumar que NO seguí *",N(4,["5 o más"])],["o","us","Urgencias sexuales que NO seguí *",N(4,["5 o más"])]];
+const CM=[["s","animo","Ánimo del día (0 muy bajo – 10 muy bueno)",10],["s","estres","Estrés del día (0 nada – 10 máximo)",10],["s","soledad","Soledad del día (0 nada – 10 máxima)",10],["n","sueno","Horas dormidas anoche"],["o","latencia","Tardé en dormirme",["Menos de 15 min","15-30 min","30-60 min","Más de 60 min"]],["o","alcohol","Alcohol hoy",["No","Poco","Bastante"]],["o","cafeina","Cafeína hoy",["No","1-2","3 o más"]],["o","noreg","¿Hoy hice algo y no lo registré?",["No","Sí","No estoy seguro"]]];
+function fld(f,p){const[ty,k,l,x]=f,id=p+k;
+if(ty=="s")return`<label>${l}: <b>–</b></label><input type=range min=0 max=${x} value=0 id=${id}>`;
+if(ty=="o"||ty=="m")return`<label>${l}</label><div class=ch id=${id} data-t=${ty}>${x.map(o=>`<button type=button data-a=ch>${esc(o)}</button>`).join("")}</div>`;
+return`<label>${l}</label><input id=${id} ${ty=="n"?'type=number inputmode=decimal min=0 step=any':""}>`}
+function col(fs,p){const o={};fs.forEach(([ty,k])=>{const e=$("#"+p+k);if(!e)return;
+if(ty=="s"){if(e.dataset.t)o[k]=+e.value}
+else if(ty=="o"||ty=="m"){const v=[...e.querySelectorAll(".on")].map(b=>b.textContent);if(v.length)o[k]=v.join(", ")}
+else if(e.value.trim()!=="")o[k]=ty=="n"?+e.value:e.value.trim()});return o}
+const chipVal=id=>{const b=$("#"+id+" .on");return b?b.textContent:""};
+function chip(b){const c=b.parentNode,on=b.classList.contains("on");if(c.dataset.t=="o")c.querySelectorAll(".on").forEach(x=>x.classList.remove("on"));b.classList.toggle("on",!on);if(c.id=="ty")$("#dyn").innerHTML=dyn(chipVal("ty"))}
+const grp=v=>/^(Porro|Cigarrillo)/.test(v)?"smoke":v=="Masturbación"?"sex":v=="Cierre nocturno"?"close":"";
+const dyn=v=>{const g=grp(v);if(!g)return"<small>Elige qué registras.</small>";
+const hd=g=="close"?`<label>Fecha</label><input type=date id=e_fecha value="${today}">`:fld(["o","cuando","¿Cuándo ocurrió? *",CU],"e_").replace("data-a=ch>Ahora","data-a=ch class=on>Ahora");
+return hd+(g=="close"?CL.concat(CM):F[g]).map(f=>fld(f,"e_")).join("")+`<label>Nota (opcional)</label><textarea id=e_nota rows=2></textarea><button class=btn data-a=se>Guardar</button>`};
+const pct=(id,n)=>{const p=sel.slice(0,8);let d=0;for(const k in db.days)if(k.startsWith(p)&&db.days[k][id])d++;const e=sel.slice(0,7)==today.slice(0,7)?+today.slice(8):n;return Math.round(100*d/e)};
+const hd=()=>{const[y,m]=sel.split("-").map(Number);return`<div class=top><button data-a=mo data-v=-1>‹</button><h1>${MS[m-1]} ${y}</h1><button data-a=mo data-v=1>›</button></div>`};
+function vH(){const[y,m]=sel.split("-").map(Number),n=new Date(y,m,0).getDate(),p=sel.slice(0,8);
+let h=hd()+`<div class=days>`;
+for(let i=1;i<=n;i++){const k=p+pad(i);h+=`<div class="d${k==sel?" on":""}" data-a=day data-v=${k}><b>${i}</b>${Object.keys(db.days[k]||{}).length?"<i></i>":"&nbsp;"}</div>`}
+h+=`</div>`;
+["Mañana","Tarde","Noche"].forEach(b=>{h+=`<details class=card open><summary>${b}</summary>`+db.habits.filter(x=>x.b==b).map(x=>`<div class=row data-a=tg data-v=${x.id}><div class="ck${(db.days[sel]||{})[x.id]?" on":""}"></div><span style=flex:1>${esc(x.n)}</span><small>${pct(x.id,n)}%</small>${edit?`<button class=x data-a=dh data-v=${x.id}>✕</button>`:""}</div>`).join("")+`</details>`});
+const g=db.goals[sel.slice(0,7)]||[];
+h+=`<div class=card><h2>Objetivos del mes</h2>`+g.map(x=>`<div class=row data-a=gt data-v=${x.id}><div class="ck${x.d?" on":""}"></div><span style=flex:1>${esc(x.t)}</span>${edit?`<button class=x data-a=dg data-v=${x.id}>✕</button>`:""}</div>`).join("")||"<small>Sin objetivos</small>";
+h+=`</div>`;
+if(edit)h+=`<div class=card><h2>Añadir hábito</h2><input id=nh placeholder="Nombre"><label>Bloque</label><select id=nb><option>Mañana<option>Tarde<option>Noche</select><button class=btn data-a=ah>Añadir hábito</button><h2 style="margin-top:18px">Añadir objetivo</h2><input id=ng placeholder="Objetivo del mes"><button class=btn data-a=ag>Añadir objetivo</button></div>`;
+return h+`<button class="btn g" data-a=ed>${edit?"Listo":"Editar hábitos y objetivos"}</button>`}
+function vP(){const[y,m]=sel.split("-").map(Number),n=new Date(y,m,0).getDate(),p=sel.slice(0,8),ids=db.habits.map(h=>h.id),mx=ids.length||1,e=sel.slice(0,7)==today.slice(0,7)?+today.slice(8):n;
+let bars="",tot=0;for(let i=1;i<=n;i++){const d=db.days[p+pad(i)]||{},c=ids.filter(x=>d[x]).length;tot+=c;bars+=`<div title="${i}: ${c}" style="height:${100*c/mx}%"></div>`}
+const lg={};db.logs.filter(l=>l.ts.startsWith(sel.slice(0,7))).forEach(l=>lg[l.tipo]=(lg[l.tipo]||0)+1);
+const bk=db.bk?Math.floor((Date.now()-db.bk)/864e5)+" días":"nunca";
+return hd()+`<div class=card><h2>Constancia diaria</h2><div class=bars>${bars}</div><small>Promedio: ${(tot/e).toFixed(1)} de ${ids.length} hábitos por día</small></div>
+<div class=card><h2>Registros del mes</h2>${Object.keys(lg).map(k=>`<div class=row><span style=flex:1>${k}</span><b>${lg[k]}</b></div>`).join("")||"<small>Ninguno</small>"}</div>
+<div class=card><h2>Respaldo</h2><small>Último respaldo: ${bk}. Si borras los datos del navegador, se pierde todo.</small>
+<button class=btn data-a=xj>Exportar todo (JSON)</button><button class="btn g" data-a=xh>Hábitos del mes (CSV)</button><button class="btn g" data-a=xl>Registros (CSV)</button><button class="btn g" data-a=xk>Cierres del día (CSV)</button><button class="btn g" data-a=xc>Copiar JSON al portapapeles</button></div>`}
+function vR(){const sg=["Registrar","Reflexión"].map((t,i)=>`<button class="${sub==i?"on":""}" data-a=sub data-v=${i}>${t}</button>`).join("");let h=`<div class=seg>${sg}</div>`;
+if(sub==0)h+=`<div class=card><h2>Registro · solo datos, sin juicio</h2><label>¿Qué registras? *</label><div class=ch id=ty data-t=o>${TY.map(t=>`<button type=button data-a=ch>${t}</button>`).join("")}</div><div id=dyn>${dyn("")}</div></div>`+
+`<div class=card><h2>Últimos</h2>`+db.logs.slice(-6).reverse().map(l=>`<div class=row><span style=flex:1>${esc(l.tipo)}<br><small>${l.ts.replace("T"," ")}</small></span><button class=x data-a=dl data-v=${l.id}>✕</button></div>`).join("")+`</div>`;
+if(sub==1)h+=`<div class=card><h2>Reflexión</h2><small>Para dictar, toca el micrófono de tu teclado.</small><textarea id=rf rows=5 style="margin-top:8px"></textarea><button class=btn data-a=sr>Guardar</button></div><div class=card>`+db.notes.slice(-5).reverse().map(x=>`<div class=row><span><small>${x.ts.replace("T"," ")}</small><br>${esc(x.t)}</span></div>`).join("")+`</div>`;
+return h}
+function render(){$("#m").innerHTML=[vR,vH,vP][tab]();[...$("#nv").children].forEach((b,i)=>b.className=i==tab?"on":"")}
+function dl(n,t,ty){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+t],{type:ty}));a.download=n;a.click();db.bk=Date.now();save();toast("Exportado")}catch(e){toast("Usa «Copiar JSON»")}}
+const csv=r=>{const k=[...new Set(r.flatMap(Object.keys))];return[k.join(",")].concat(r.map(o=>k.map(c=>JSON.stringify(o[c]??"")).join(","))).join("\n")};
+const done=(a,k)=>(a[k]=!a[k]);
+function act(a,v){const ym=sel.slice(0,7);
+if(a=="tab"){tab=+v;edit=false}
+else if(a=="sub")sub=+v;
+else if(a=="day")sel=v;
+else if(a=="mo"){const[y,m]=sel.split("-").map(Number),k=ymd(new Date(y,m-1+ +v,1));if(k.slice(0,7)>today.slice(0,7))return;sel=k.slice(0,7)==today.slice(0,7)?today:k}
+else if(a=="tg"){const d=db.days[sel]=db.days[sel]||{};d[v]=!d[v];if(!d[v])delete d[v];save()}
+else if(a=="gt"){const g=db.goals[ym].find(x=>x.id==v);g.d=!g.d;save()}
+else if(a=="ed")edit=!edit;
+else if(a=="ah"){const n=$("#nh").value.trim();if(n){db.habits.push({id:"h"+Date.now(),n,b:$("#nb").value});save()}}
+else if(a=="ag"){const t=$("#ng").value.trim();if(t){(db.goals[ym]=db.goals[ym]||[]).push({id:"g"+Date.now(),t,d:false});save()}}
+else if(a=="dh"){if(!confirm("¿Eliminar hábito?"))return;db.habits=db.habits.filter(x=>x.id!=v);save()}
+else if(a=="dg"){db.goals[ym]=db.goals[ym].filter(x=>x.id!=v);save()}
+else if(a=="se"){const tipo=chipVal("ty"),g=grp(tipo);if(!g)return toast("Elige qué registras");
+if(g=="close"){const o=col(CL.concat(CM,[["t","nota"]]),"e_"),f=$("#e_fecha").value||today;if(CL.some(x=>o[x[1]]===undefined))return toast("Llena los conteos, con 0 si fue ninguno");if(db.closes[f]&&!confirm("Ya hay un cierre en esa fecha. ¿Reemplazarlo?"))return;db.closes[f]=o}
+else{const o=col(F[g].concat([["o","cuando"],["t","nota"]]),"e_");if(!o.cuando)return toast("Elige cuándo ocurrió");db.logs.push({id:Date.now(),ts:nowL(),tipo,...o})}
+save();toast("Guardado")}
+else if(a=="dl"){db.logs=db.logs.filter(x=>x.id!=v);save()}
+else if(a=="sr"){const t=$("#rf").value.trim();if(!t)return;db.notes.push({ts:nowL(),t});save();toast("Guardado")}
+else if(a=="xj")return dl("aura-respaldo-"+today+".json",JSON.stringify(db,null,1),"application/json");
+else if(a=="xc"){try{navigator.clipboard.writeText(JSON.stringify(db)).then(()=>{db.bk=Date.now();save();toast("Copiado")},()=>toast("No se pudo copiar"))}catch(e){toast("No se pudo copiar")}return}
+else if(a=="xh"){const n=new Date(+sel.slice(0,4),+sel.slice(5,7),0).getDate();return dl("habitos-"+ym+".csv",csv(db.habits.map(h=>{const o={habito:h.n,bloque:h.b};for(let i=1;i<=n;i++)o["d"+i]=(db.days[ym+"-"+pad(i)]||{})[h.id]?1:0;return o})),"text/csv")}
+else if(a=="xk")return dl("cierres.csv",csv(Object.entries(db.closes).map(([f,o])=>({fecha:f,...o}))),"text/csv");
+else if(a=="xl")return dl("registros.csv",csv(db.logs),"text/csv");
+render()}
+document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t)return;if(t.dataset.a=="ch")return chip(t);act(t.dataset.a,t.dataset.v)});
+document.addEventListener("input",e=>{const t=e.target;if(t.type=="range"){t.dataset.t=1;t.previousElementSibling.querySelector("b").textContent=t.value}});
+document.addEventListener("change",e=>{if(e.target.id=="ty")$("#dyn").innerHTML=dyn(e.target.value)});
+render();
+</script></body></html>
