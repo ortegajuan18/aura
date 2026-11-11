@@ -24,7 +24,7 @@ label{display:block;font-size:13px;color:var(--mu);margin:14px 0 5px}label b{col
 .bars{display:flex;align-items:flex-end;gap:2px;height:120px}.bars div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-height:2px}
 .ch{display:flex;flex-wrap:wrap;gap:8px}.ch button{background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:999px;padding:9px 13px;font:inherit;font-size:14px}.ch .on{background:var(--ac);border-color:var(--ac)}
 
-/* Barra de navegación flotante estilo píldora */
+/* Barra de navegación flotante */
 nav {
   position: fixed;
   left: 16px;
@@ -86,7 +86,7 @@ const N=(m,x)=>{const a=[];for(let i=0;i<=m;i++)a.push(""+i);return a.concat(x||
 const TY=["Cigarrillo","Porro con tabaco","Porro sin tabaco","Masturbación","Cierre nocturno"];
 const CU=["Ahora (últimos 15 min)","Hace 15-60 min","Hace 1-3 h","Hace más de 3 h (aprox.)","Ayer o antes"];
 const F={
-smoke:[["o","cant","¿Cuántos PROPIOS en este momento? (sin la cajetilla compartida)",["1","2","3","4","5","6 o más"]],["m","con","¿Con quién?",["Solo","Amigos","Pareja / persona que me gusta","Familia","Compañeros de clase/trabajo"]],["o","donde","¿Dónde?",["Habitación / cama","Casa (otras áreas)","Calle","Bar / fiesta / casa de amigos","Universidad / trabajo","Transporte"]],["o","llego","¿Cómo llegó?",["Yo lo pedí / compré","Me lo ofrecieron","Estaba en la ronda (se repartió)","Otra"]],["s","urg","Urgencia antes (0 ninguna – 10 máxima)",10],["o","como","¿Cómo fue?",["Lo decidí / planeado","Impulso","Automático (sin darme cuenta)"]],["o","resistio","¿Intenté resistir o posponerก่อน?",["Sí","No","No aplica"]],["m","estado","Estado antes",EST]],
+smoke:[["o","cant","¿Cuántos PROPIOS en este momento? (sin la cajetilla compartida)",["1","2","3","4","5","6 o más"]],["m","con","¿Con quién?",["Solo","Amigos","Pareja / persona que me gusta","Familia","Compañeros de clase/trabajo"]],["o","donde","¿Dónde?",["Habitación / cama","Casa (otras áreas)","Calle","Bar / fiesta / casa de amigos","Universidad / trabajo","Transporte"]],["o","llego","¿Cómo llegó?",["Yo lo pedí / compré","Me lo ofrecieron","Estaba en la ronda (se repartió)","Otra"]],["s","urg","Urgencia antes (0 ninguna – 10 máxima)",10],["o","como","¿Cómo fue?",["Lo decidí / planeado","Impulso","Automático (sin darme cuenta)"]],["o","resistio","¿Intenté resistir o posponer antes?",["Sí","No","No aplica"]],["m","estado","Estado antes",EST]],
 sex:[["s","urg","Urgencia antes (0 ninguna – 10 máxima)",10],["o","como","¿Cómo fue?",["Agendada / decidida","Impulso","Automático (sin darme cuenta)"]],["m","estim","Estímulo",["Fantasía","Recuerdo","Persona concreta","Pornografía","Redes sociales","Ninguno / automático"]],["m","estado","Estado antes",EST],["o","donde","¿Dónde?",["Cama","Baño","Otro lugar"]],["n","min","Duración aproximada (minutos)"],["s","reg","¿Pude regular mi excitación? (0 nada – 10 totalmente)",10],["s","pres","¿Estuve presente, no en piloto automático? (0–10)",10],["s","irr","Irritación o dolor en la zona (0 ninguna – 3 marcada)",3],["m","quedo","Cómo quedé",["Aliviado","Tranquilo","Con sueño","Neutro","Vacío","Culpa / vergüenza","Ansioso","Satisfecho"]]]};
 const CL=[["o","cig","Cigarrillos PROPIOS hoy *",N(10,["Más de 10"])],["o","pct","Porros CON tabaco hoy (los que fumé yo) *",N(4,["5 o más"])],["o","pst","Porros SIN tabaco hoy (los que fumé yo) *",N(4,["5 o más"])],["o","mast","Sesiones de masturbación hoy *",N(2,["3 o más"])],["o","uf","Urgencias de fumar que NO seguí *",N(4,["5 o más"])],["o","us","Urgencias sexuales que NO seguí *",N(4,["5 o más"])]];
 const CM=[["s","animo","Ánimo del día (0 muy bajo – 10 muy bueno)",10],["s","estres","Estrés del día (0 nada – 10 máximo)",10],["s","soledad","Soledad del día (0 nada – 10 máxima)",10],["n","sueno","Horas dormidas anoche"],["o","latencia","Tardé en dormirme",["Menos de 15 min","15-30 min","30-60 min","Más de 60 min"]],["o","alcohol","Alcohol hoy",["No","Poco","Bastante"]],["o","cafeina","Cafeína hoy",["No","1-2","3 o más"]],["o","noreg","¿Hoy hice algo y no lo registré?",["No","Sí","No estoy seguro"]]];
@@ -99,7 +99,7 @@ if(ty=="s"){if(e.dataset.t)o[k]=+e.value}
 else if(ty=="o"||ty=="m"){const v=[...e.querySelectorAll(".on")].map(b=>b.textContent);if(v.length)o[k]=v.join(", ")}
 else if(e.value.trim()!=="")o[k]=ty=="n"?+e.value:e.value.trim()});return o}
 const chipVal=id=>{const b=$("#"+id+" .on");return b?b.textContent:""};
-const chip(b){const c=b.parentNode,on=b.classList.contains("on");if(c.dataset.t=="o")c.querySelectorAll(".on").forEach(x=>x.classList.remove("on"));b.classList.toggle("on",!on);if(c.id=="ty")$("#dyn").innerHTML=dyn(chipVal("ty"))}
+const chip = b => {const c=b.parentNode,on=b.classList.contains("on");if(c.dataset.t=="o")c.querySelectorAll(".on").forEach(x=>x.classList.remove("on"));b.classList.toggle("on",!on);if(c.id=="ty")$("#dyn").innerHTML=dyn(chipVal("ty"))};
 const grp=v=>/^(Porro|Cigarrillo)/.test(v)?"smoke":v=="Masturbación"?"sex":v=="Cierre nocturno"?"close":"";
 const dyn=v=>{const g=grp(v);if(!g)return"<small>Elige qué registras.</small>";
 const hd=g=="close"?`<label>Fecha</label><input type=date id=e_fecha value="${today}">`:fld(["o","cuando","¿Cuándo ocurrió? *",CU],"e_").replace("data-a=ch>Ahora","data-a=ch class=on>Ahora");
