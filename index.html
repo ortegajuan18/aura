@@ -2,6 +2,8 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0c"><title>Aura</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
 <style>
 :root{--bg:#0a0a0c;--card:#16161a;--ac:#7c3aed;--mu:#9ca3af;--ln:#26262c;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:#fff;font:15px system-ui,Roboto,sans-serif}
@@ -66,7 +68,6 @@ nav .on::before {
 
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#fff;color:#000;border-radius:14px;padding:10px 16px;opacity:0;transition:.3s;pointer-events:none}
 </style>
-<link rel="manifest" href="./manifest.json">
 </head><body><main id="m"></main>
 <nav id="nv"><button data-a="tab" data-v="0">Registro</button><button data-a="tab" data-v="1">Hábitos</button><button data-a="tab" data-v="2">Progreso</button></nav>
 <div id="toast"></div>
@@ -99,11 +100,11 @@ if(ty=="s"){if(e.dataset.t)o[k]=+e.value}
 else if(ty=="o"||ty=="m"){const v=[...e.querySelectorAll(".on")].map(b=>b.textContent);if(v.length)o[k]=v.join(", ")}
 else if(e.value.trim()!=="")o[k]=ty=="n"?+e.value:e.value.trim()});return o}
 const chipVal=id=>{const b=$("#"+id+" .on");return b?b.textContent:""};
-const chip = b => {const c=b.parentNode,on=b.classList.contains("on");if(c.dataset.t=="o")c.querySelectorAll(".on").forEach(x=>x.classList.remove("on"));b.classList.toggle("on",!on);if(c.id=="ty")$("#dyn").innerHTML=dyn(chipVal("ty"))};
+const chip=b=>{const c=b.parentNode,on=b.classList.contains("on");if(c.dataset.t=="o")c.querySelectorAll(".on").forEach(x=>x.classList.remove("on"));b.classList.toggle("on",!on);if(c.id=="ty")$("#dyn").innerHTML=dyn(chipVal("ty"))};
 const grp=v=>/^(Porro|Cigarrillo)/.test(v)?"smoke":v=="Masturbación"?"sex":v=="Cierre nocturno"?"close":"";
 const dyn=v=>{const g=grp(v);if(!g)return"<small>Elige qué registras.</small>";
-const hd=g=="close"?`<label>Fecha</label><input type=date id=e_fecha value="${today}">`:fld(["o","cuando","¿Cuándo ocurrió? *",CU],"e_").replace("data-a=ch>Ahora","data-a=ch class=on>Ahora");
-return hd+(g=="close"?CL.concat(CM):F[g]).map(f=>fld(f,"e_")).join("")+`<label>Nota (opcional)</label><textarea id=e_nota rows=2></textarea><button class=btn data-a=se>Guardar</button>`};
+const head=g=="close"?`<label>Fecha</label><input type=date id=e_fecha value="${today}">`:fld(["o","cuando","¿Cuándo ocurrió? *",CU],"e_").replace("data-a=ch>Ahora","data-a=ch class=on>Ahora");
+return head+(g=="close"?CL.concat(CM):F[g]).map(f=>fld(f,"e_")).join("")+`<label>Nota (opcional)</label><textarea id=e_nota rows=2></textarea><button class=btn data-a=se>Guardar</button>`};
 const pct=(id,n)=>{const p=sel.slice(0,8);let d=0;for(const k in db.days)if(k.startsWith(p)&&db.days[k][id])d++;const e=sel.slice(0,7)==today.slice(0,7)?+today.slice(8):n;return Math.round(100*d/e)};
 const hd=()=>{const[y,m]=sel.split("-").map(Number);return`<div class=top><button data-a=mo data-v=-1>‹</button><h1>${MS[m-1]} ${y}</h1><button data-a=mo data-v=1>›</button></div>`};
 function vH(){const[y,m]=sel.split("-").map(Number),n=new Date(y,m,0).getDate(),p=sel.slice(0,8);
@@ -112,7 +113,7 @@ for(let i=1;i<=n;i++){const k=p+pad(i);h+=`<div class="d${k==sel?" on":""}" data
 h+=`</div>`;
 ["Mañana","Tarde","Noche"].forEach(b=>{h+=`<details class=card open><summary>${b}</summary>`+db.habits.filter(x=>x.b==b).map(x=>`<div class=row data-a=tg data-v=${x.id}><div class="ck${(db.days[sel]||{})[x.id]?" on":""}"></div><span style=flex:1>${esc(x.n)}</span><small>${pct(x.id,n)}%</small>${edit?`<button class=x data-a=dh data-v=${x.id}>✕</button>`:""}</div>`).join("")+`</details>`});
 const g=db.goals[sel.slice(0,7)]||[];
-h+=`<div class=card><h2>Objetivos del mes</h2>`+g.map(x=>`<div class=row data-a=gt data-v=${x.id}><div class="ck${x.d?" on":""}"></div><span style=flex:1>${esc(x.t)}</span>${edit?`<button class=x data-a=dg data-v=${x.id}>✕</button>`:""}</div>`).join("")||"<small>Sin objetivos</small>";
+h+=`<div class=card><h2>Objetivos del mes</h2>`+(g.map(x=>`<div class=row data-a=gt data-v=${x.id}><div class="ck${x.d?" on":""}"></div><span style=flex:1>${esc(x.t)}</span>${edit?`<button class=x data-a=dg data-v=${x.id}>✕</button>`:""}</div>`).join("")||"<small>Sin objetivos</small>");
 h+=`</div>`;
 if(edit)h+=`<div class=card><h2>Añadir hábito</h2><input id=nh placeholder="Nombre"><label>Bloque</label><select id=nb><option>Mañana<option>Tarde<option>Noche</select><button class=btn data-a=ah>Añadir hábito</button><h2 style="margin-top:18px">Añadir objetivo</h2><input id=ng placeholder="Objetivo del mes"><button class=btn data-a=ag>Añadir objetivo</button></div>`;
 return h+`<button class="btn g" data-a=ed>${edit?"Listo":"Editar hábitos y objetivos"}</button>`}
@@ -130,21 +131,18 @@ if(sub==0)h+=`<div class=card><h2>Registro · solo datos, sin juicio</h2><label>
 if(sub==1)h+=`<div class=card><h2>Reflexión</h2><small>Para dictar, toca el micrófono de tu teclado.</small><textarea id=rf rows=5 style="margin-top:8px"></textarea><button class=btn data-a=sr>Guardar</button></div><div class=card>`+db.notes.slice(-5).reverse().map(x=>`<div class=row><span><small>${x.ts.replace("T"," ")}</small><br>${esc(x.t)}</span></div>`).join("")+`</div>`;
 return h}
 
-/* Corrección del scroll para que no regrese al día 1 al hacer clic */
+/* Conserva el scroll horizontal de los días al re-renderizar */
 function render(){
-  const scroller = document.querySelector('.days');
-  const scrollPos = scroller ? scroller.scrollLeft : 0;
-  
+  const scroller=document.querySelector(".days");
+  const scrollPos=scroller?scroller.scrollLeft:0;
   $("#m").innerHTML=[vR,vH,vP][tab]();
   [...$("#nv").children].forEach((b,i)=>b.className=i==tab?"on":"");
-  
-  const newScroller = document.querySelector('.days');
-  if(newScroller) newScroller.scrollLeft = scrollPos;
+  const newScroller=document.querySelector(".days");
+  if(newScroller)newScroller.scrollLeft=scrollPos;
 }
 
 function dl(n,t,ty){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+t],{type:ty}));a.download=n;a.click();db.bk=Date.now();save();toast("Exportado")}catch(e){toast("Usa «Copiar JSON»")}}
 const csv=r=>{const k=[...new Set(r.flatMap(Object.keys))];return[k.join(",")].concat(r.map(o=>k.map(c=>JSON.stringify(o[c]??"")).join(","))).join("\n")};
-const done=(a,k)=>(a[k]=!a[k]);
 function act(a,v){const ym=sel.slice(0,7);
 if(a=="tab"){tab=+v;edit=false}
 else if(a=="sub")sub=+v;
@@ -171,6 +169,10 @@ else if(a=="xl")return dl("registros.csv",csv(db.logs),"text/csv");
 render()}
 document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t)return;if(t.dataset.a=="ch")return chip(t);act(t.dataset.a,t.dataset.v)});
 document.addEventListener("input",e=>{const t=e.target;if(t.type=="range"){t.dataset.t=1;t.previousElementSibling.querySelector("b").textContent=t.value}});
-document.addEventListener("change",e=>{if(e.target.id=="ty")$("#dyn").innerHTML=dyn(e.target.value)});
 render();
+
+/* Service Worker (ruta relativa: funciona en /aura/) */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("SW no registrado:",e))});
+}
 </script></body></html>
