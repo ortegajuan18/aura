@@ -1,21 +1,19 @@
-const CACHE_NAME = 'aura-v1';
+const CACHE_NAME = 'aura-v2';
 const ASSETS = [
   './index.html',
   './manifest.json'
 ];
 
-// Instalación del Service Worker y almacenamiento en caché
-self.addEventListener('install', (event) => {
-  event.waitUntil(
+self.addEventListener('install', (e) => {
+  e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
     })
   );
 });
 
-// Activación y limpieza de cachés antiguas
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
@@ -24,11 +22,10 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Interceptación de solicitudes para funcionamiento offline
-self.addEventListener('fetch', (event) => {
-  event.respondIn(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then((response) => {
+      return response || fetch(e.request);
     })
   );
 });
