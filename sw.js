@@ -1,4 +1,4 @@
-const V = "aura-v7";
+const V = "aura-v8";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.png"];
 
 self.addEventListener("install", (e) => {
