@@ -23,7 +23,7 @@ summary{font-weight:600;padding:4px 0;cursor:pointer}small{color:var(--mu)}
 input,select,textarea{width:100%;background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:12px;padding:11px;font:inherit}
 label{display:block;font-size:13px;color:var(--mu);margin:14px 0 5px}
 .btn{background:var(--ac);color:#fff;border:0;border-radius:14px;padding:13px;font:inherit;font-weight:600;width:100%;margin-top:14px}.btn.g{background:#24242b;margin-top:8px}
-.seg{display:flex;gap:4px;background:var(--card);border-radius:16px;padding:4px;margin-bottom:12px}.seg button{flex:1;border:0;background:none;color:var(--mu);border-radius:12px;padding:9px;font:inherit}.seg .on{background:var(--ac);color:#fff}.seg .fs{flex:none;width:44px;color:#fff}
+.seg{display:flex;gap:4px;background:var(--card);border-radius:16px;padding:4px;margin-bottom:12px}.seg button{flex:1;border:0;background:none;color:var(--mu);border-radius:12px;padding:9px;font:inherit}.seg .on{background:var(--ac);color:#fff}
 .bars{display:flex;align-items:flex-end;gap:2px;height:120px}.bars div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-height:2px}
 .ch{display:flex;flex-wrap:wrap;gap:8px}.ch button{background:#0f0f12;border:1px solid var(--ln);color:#fff;border-radius:999px;padding:9px 13px;font:inherit;font-size:14px}.ch .on{background:var(--ac);border-color:var(--ac)}.ch.n button{width:40px;padding:9px 0}
 nav{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;background:#121216;border:1px solid var(--ln);border-radius:999px;padding:8px 12px;box-shadow:0 10px 25px rgba(0,0,0,.5)}
@@ -93,7 +93,7 @@ return hd()+`<div class=card><h2>Constancia diaria</h2><div class=bars>${bars}</
 <div class=card><h2>Cierres del mes (${cs.length})</h2>${rw("Ánimo promedio",av("animo"))}${rw("Estrés promedio",av("estres"))}${rw("Soledad promedio",av("soledad"))}${rw("Horas de sueño promedio",av("sueno"))}</div>
 <div class=card><h2>Respaldo</h2><small>Último respaldo: ${bk}. Si borras los datos del navegador, se pierde todo.</small>
 <button class=btn data-a=xj>Exportar todo (JSON)</button><button class="btn g" data-a=xh>Hábitos del mes (CSV)</button><button class="btn g" data-a=xl>Registros (CSV)</button><button class="btn g" data-a=xk>Cierres del día (CSV)</button><button class="btn g" data-a=xc>Copiar JSON al portapapeles</button></div>`}
-function vR(){let h=`<div class=seg>${["Registrar","Reflexión"].map((t,i)=>`<button class="${sub==i?"on":""}" data-a=sub data-v=${i}>${t}</button>`).join("")}<button class=fs data-a=fs aria-label="Pantalla completa">⛶</button></div>`;
+function vR(){let h=`<div class=seg>${["Registrar","Reflexión"].map((t,i)=>`<button class="${sub==i?"on":""}" data-a=sub data-v=${i}>${t}</button>`).join("")}</div>`;
 if(sub==0)h+=`<div class=card><h2>Registro · solo datos, sin juicio</h2><label>¿Qué registras? *</label><div class=ch id=ty data-t=o>${TY.map(t=>`<button type=button data-a=ch>${t}</button>`).join("")}</div><div id=dyn>${dyn("")}</div></div>`+
 `<div class=card><h2>Últimos</h2>`+(db.logs.slice(-6).reverse().map(l=>`<div class=row><span>${esc(l.tipo)}<br><small>${l.ts.replace("T"," ")}${l.cuando?" · "+esc(l.cuando):""}</small></span></div>`).join("")||"<small>Aún no hay registros</small>")+`</div>`;
 else h+=`<div class=card><h2>Reflexión</h2><small>Para dictar, toca el micrófono de tu teclado.</small><textarea id=rf rows=5 style="margin-top:8px"></textarea><button class=btn data-a=sr>Guardar</button></div><div class=card>`+db.notes.slice(-5).reverse().map(x=>`<div class=row><span><small>${x.ts.replace("T"," ")}</small><br>${esc(x.t)}</span></div>`).join("")+`</div>`;
@@ -104,12 +104,9 @@ $("#m").innerHTML=[vR,vH,vP][tab]();
 const nsc=$(".days");if(nsc)nsc.scrollLeft=sx;scrollTo(0,y)}
 function dl(n,t,ty){try{const u=URL.createObjectURL(new Blob(["\ufeff"+t],{type:ty})),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);db.bk=Date.now();save();toast("Exportado");render()}catch(e){toast("Usa «Copiar JSON»")}}
 const csv=r=>{const k=[...new Set(r.flatMap(Object.keys))];return[k.join(",")].concat(r.map(o=>k.map(c=>JSON.stringify(o[c]??"")).join(","))).join("\n")};
-function fs(){const el=document.documentElement;if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return}
-const f=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen;if(!f)return toast("Tu navegador no permite pantalla completa");try{const p=f.call(el);if(p&&p.catch)p.catch(()=>toast("Pantalla completa no disponible"))}catch(e){toast("Pantalla completa no disponible")}}
 function act(a,v){const ym=sel.slice(0,7);let top=false;
 if(a=="tab"){tab=+v;edit=false;top=true}
 else if(a=="sub"){sub=+v;top=true}
-else if(a=="fs")return fs();
 else if(a=="day")sel=v;
 else if(a=="mo"){const[y,m]=sel.split("-").map(Number),k=ymd(new Date(y,m-1+ +v,1));if(k.slice(0,7)>today.slice(0,7))return;sel=k.slice(0,7)==today.slice(0,7)?today:k}
 else if(a=="tg"){const d=db.days[sel]=db.days[sel]||{};d[v]=!d[v];if(!d[v])delete d[v];save()}
